@@ -1,0 +1,34 @@
+pipeline {
+    agent {
+        docker { image 'node:7-alpine' }
+    }
+    stages {
+        stage ('Build') {
+            steps {
+            
+                sh '''
+                echo "building"
+                git clone https://github.com/odrodrig/DevOpsWorkshop.git
+                cd DevOpsWorkshop
+                npm install
+                '''
+            }
+        }
+        stage ('test') {
+            steps {
+                sh '''
+                npm test
+                '''
+            }
+
+        }
+        stage ('deploy') {
+            steps {
+                sh '''
+                docker run -d -p 8080:8080 --name node-test odrodrig/node-test:latest
+                docker ps
+                '''
+            }
+        }
+    }
+}
