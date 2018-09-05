@@ -24,7 +24,8 @@ pipeline {
                                                 passwordVariable: 'PASSWORD')]) {
                                                     sh '''
                                                     #!/bin/bash
-                                                    cd DevOpsWorkshop/nodeTest
+                                                    ls
+                                                    cd nodeTest
                                                     docker login -u ${USERNAME} -p ${PASSWORD}
                                                     docker build -t $USERNAME/$APP_NAME:$BUILD_NUMBER .
                                                     docker push $USERNAME/$APP_NAME:$BUILD_NUMBER
