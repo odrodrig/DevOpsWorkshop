@@ -207,7 +207,7 @@ Before we get started there are a few prerequisites that are required for this w
 
     4. Click **Build**
 
-    1[Start Build](./images/startBuild.png)
+    ![Start Build](./images/startBuild.png)
 
     5. After starting the build you should be taken back to the pipeline's main page and a table should now appear showing the build and the status of each stage. On the left of the page, look for the **Build History** table on the left side of the page and click on the little circle that is flashing next to your current build number. This will take you to the console output of the build so you can see the progress.
 
@@ -262,12 +262,53 @@ Before we get started there are a few prerequisites that are required for this w
     ![add Webhook](./images/addWebhook.png)
 
     10. Under **Payload URL**, paste the webhook URL we copied from Jenkins. 
-    11. Leave the rest of the fields with the default values and click on the **add webhook** button at the bottom
-
-   And now your pipeline is ready to build on commits.
+    11. Leave the rest of the fields with the default values and click on the **add webhook** button at the bottom.
+    
+        And now your pipeline is ready to build on commits.
 
 11. Now let's make a change to the app and push the change
 
-    1. Open up the **index.
+    1. Open up the **nodeApp/public/index.html** file in your code editor of choice or through GitHub in the browser by pressing the pencil icon that says **Edit this file**.
+    2. Go to the **Welcome** message in line 31 and replace the word "Welcome" with your greeting of choice.
 
-12. Visit the app again to see changes
+    ![index](./images/index.png)
+
+    3. Now we need to push the latest changes to our repo
+
+        - If editing locally: 
+            1. Open your terminal and change directory in the project directory
+            2. Run the following commands:
+
+            ```bash
+            git add .
+            ```
+            ```bash
+            git commit -m "Changed welcome message"
+            ```
+            ```bash
+            git push
+            ```
+
+        - If editing through the browser:
+            1. Scroll down to the **Commit changes** section and enter the following in the first text field:
+
+            ```
+            Changed welcome message
+            ```
+
+            ![browser commit](./images/browserCommit.png)
+
+            2. Click on the green button that says **Commit changes**
+
+    4. After pushing changes, go back into your pipeline in Jenkins and you should see the pipeline running automatically
+
+12. Go back to your browser tab that has your Play with Docker environment and click on the port number **8080**.
+
+   You should now see your app running but this time, your custom welcome message will be displayed.
+
+    ![hello there](./images/helloThere.png)
+
+
+##Review
+
+In this workshop we deployed an instance of Jenkins on Docker using the Play with Docker environment. Then, we configured a pipeline for deploying a simple node.js application to the same Play with Docker environment. After configuring the pipeline, we then integrated with GitHub to allow for automatic builds on commits to the repo.

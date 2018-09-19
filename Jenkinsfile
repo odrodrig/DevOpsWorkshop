@@ -25,7 +25,7 @@ pipeline {
             steps {
                 sh '''
                 #!/bin/bash
-                cd nodeTest
+                cd nodeApp
                 npm install
                 npm test
                 '''
@@ -39,7 +39,7 @@ pipeline {
                                                     sh '''
                                                     #!/bin/bash
                                                     ls
-                                                    cd nodeTest
+                                                    cd nodeApp
                                                     docker login -u ${USERNAME} -p ${PASSWORD}
                                                     docker build -t $USERNAME/$APP_NAME:$BUILD_NUMBER .
                                                     docker push $USERNAME/$APP_NAME:$BUILD_NUMBER
