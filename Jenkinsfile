@@ -1,4 +1,4 @@
-def registryCredsID = env.REGISTRY_CREDENTIALS ?: "registry-credentials"
+def registryCredsID = env.REGISTRY_CREDENTIALS ?: "registry_credentials"
 
 pipeline {
 
@@ -40,7 +40,8 @@ pipeline {
                 #!/bin/bash
                 docker version
 
-                if [ docker ps -f name=APP_NAME ]; then
+                if [ "$(docker ps -f name=$APP_NAME)" ]; then
+                   echo 'App exists, removing old container'
                    docker kill $APP_NAME
                    docker rm $APP_NAME
                 fi 
