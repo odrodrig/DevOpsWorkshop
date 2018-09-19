@@ -264,5 +264,10 @@ Before we get started there are a few prerequisites that are required for this w
     10. Under **Payload URL**, paste the webhook URL we copied from Jenkins. 
     11. Leave the rest of the fields with the default values and click on the **add webhook** button at the bottom
 
-11. Make change, push, and watch pipeline kick off
+   And now your pipeline is ready to build on commits.
+
+11. Now let's make a change to the app and push the change
+
+    1. Open up the **index.
+
 12. Visit the app again to see changes
