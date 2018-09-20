@@ -15,7 +15,6 @@
 def registryCredsID = env.REGISTRY_CREDENTIALS ?: "registry_credentials"
 
 pipeline {
-
     agent any
     stages {
         stage ('test') {
@@ -34,15 +33,14 @@ pipeline {
         stage ('Push') {
             steps {
                 withCredentials([usernamePassword(credentialsId: registryCredsID,
-                                                usernameVariable: 'USERNAME', 
+                                                usernameVariable: 'USERNAME',
                                                 passwordVariable: 'PASSWORD')]) {
                                                     sh '''
                                                     #!/bin/bash
-                                                    ls
                                                     cd nodeApp
-                                                    docker login -u ${USERNAME} -p ${PASSWORD}
-                                                    docker build -t $USERNAME/$APP_NAME:$BUILD_NUMBER .
-                                                    docker push $USERNAME/$APP_NAME:$BUILD_NUMBER
+                                                    docker login -u "$USERNAME" -p "$PASSWORD"
+                                                    docker build -t "$USERNAME/$APP_NAME:$BUILD_NUMBER" .
+                                                    docker push "$USERNAME/$APP_NAME:$BUILD_NUMBER"
                                                     '''
                                                }
             }
@@ -52,14 +50,12 @@ pipeline {
             steps {
                 sh '''
                 #!/bin/bash
-                docker version
-
-                if [ "$(docker ps -f name=$APP_NAME)" ]; then
+                if docker ps -a | grep "$APP_NAME"; then
                    echo 'App exists, removing old container'
-                   docker kill $APP_NAME
-                   docker rm $APP_NAME
-                fi 
-                docker run -d -p 8080:8080 --name $APP_NAME $DOCKER_HUB_ACCOUNT/$APP_NAME:$BUILD_NUMBER
+                   docker kill "$APP_NAME"
+                   docker rm "$APP_NAME"
+                fi
+                docker run -d -p 8080:8080 --name "$APP_NAME $DOCKER_HUB_ACCOUNT/$APP_NAME:$BUILD_NUMBER"
                 docker ps
                 '''
             }
