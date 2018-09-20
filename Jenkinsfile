@@ -55,7 +55,7 @@ pipeline {
                    docker kill "$APP_NAME"
                    docker rm "$APP_NAME"
                 fi
-                docker run -d -p 8080:8080 --name "$APP_NAME $DOCKER_HUB_ACCOUNT/$APP_NAME:$BUILD_NUMBER"
+                docker run -d -p 8080:8080 --name "$APP_NAME" "$DOCKER_HUB_ACCOUNT/$APP_NAME:$BUILD_NUMBER"
                 docker ps
                 '''
             }
