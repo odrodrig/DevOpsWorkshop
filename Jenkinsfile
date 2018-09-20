@@ -45,6 +45,7 @@ pipeline {
             steps {
                 sh '''
                 #!/bin/bash
+<<<<<<< HEAD
                 if docker ps | grep "$APP_NAME"; then
                     echo 'App exists and is running, removing old container'
                     docker kill $APP_NAME
@@ -55,6 +56,14 @@ pipeline {
                    docker rm "$APP_NAME"
                 fi
                 docker run -d -p 8080:8080 --name "$APP_NAME" "$DOCKER_HUB_ACCOUNT/$APP_NAME:$BUILD_NUMBER"
+=======
+                if docker ps -f name="$APP_NAME"; then
+                   echo 'App exists, removing old container'
+                   docker kill "$APP_NAME"
+                   docker rm "$APP_NAME"
+                fi
+                docker run -d -p 8080:8080 --name "$APP_NAME $DOCKER_HUB_ACCOUNT/$APP_NAME:$BUILD_NUMBER"
+>>>>>>> trying out Matt's new Jenkinsfile
                 docker ps
                 '''
             }
