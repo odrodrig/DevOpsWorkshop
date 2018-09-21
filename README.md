@@ -111,7 +111,7 @@ Before we get started there are a few prerequisites that are required for this w
 
     5. Next, click on the button to install suggested plugins. This will give us what we need for our basic pipeline. The installation will take a minute or two so now is a good time for a break.
 
-    !Install plugins](./images/installPlugins.png) 
+    ![Install plugins](./images/installPlugins.png) 
 
     6. After the installation of plugins, you will have the opportunity to create a new admin user. This is optional for this workshop but ideally in a production Jenkins environment, you would create new Admin identities instead of using the initial admin credentials. 
 
@@ -262,7 +262,7 @@ Before we get started there are a few prerequisites that are required for this w
     ![add Webhook](./images/addWebhook.png)
 
     10. Under **Payload URL**, paste the webhook URL we copied from Jenkins. 
-    11. Leave the rest of the fields with the default values and click on the **add webhook** button at the bottom.
+    11. Leave the rest of the fields with the default values and click on the **add webhook** button at the bottom
     
         And now your pipeline is ready to build on commits.
 
@@ -304,11 +304,11 @@ Before we get started there are a few prerequisites that are required for this w
 
 12. Go back to your browser tab that has your Play with Docker environment and click on the port number **8080**.
 
-   You should now see your app running but this time, your custom welcome message will be displayed.
+    You should now see your app running but this time, your custom welcome message will be displayed.
 
-    ![hello there](./images/helloThere.png)
+![hello there](./images/helloThere.png)
 
 
-##Review
+## Review
 
 In this workshop we deployed an instance of Jenkins on Docker using the Play with Docker environment. Then, we configured a pipeline for deploying a simple node.js application to the same Play with Docker environment. After configuring the pipeline, we then integrated with GitHub to allow for automatic builds on commits to the repo.
