@@ -27,4 +27,6 @@ app.get("/sayHello", function (request, response) {
 });
 
 app.listen(port);
+
+module.exports = app;
 console.log("Listening on port ", port);

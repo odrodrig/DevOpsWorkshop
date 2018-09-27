@@ -3,16 +3,19 @@
   "version": "0.0.0",
   "dependencies": {
     "cf-deployment-tracker-client": "*",
+    "chai": "^4.1.2",
+    "chai-http": "^4.2.0",
     "commander": "^2.6.0",
     "express": "^4.14.1",
     "http-post": "^0.1.1",
     "http-proxy": "^1.8.1",
-    "jslint": "^0.12.0"
+    "jslint": "^0.12.0",
+    "mocha": "^5.2.0"
   },
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "jslint ./*js --nomen=true"
+    "test": "jslint ./*js --nomen=true && mocha tests/test.js --exit"
   },
   "repository": {
     "type": "git",
