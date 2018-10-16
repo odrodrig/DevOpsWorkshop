@@ -42,7 +42,7 @@ pipeline {
         }
         stage ('deploy') {
             agent {
-                docker { image 'derekteay/docker-ubuntu-ibm-cli' }
+                docker { image 'ibmcom/ibm-cloud-developer-tools-amd64' }
             }
             steps {
                 sh '''
