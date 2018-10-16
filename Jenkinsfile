@@ -42,7 +42,7 @@ pipeline {
         }
         stage ('deploy') {
             agent {
-                docker { image 'derekteay/docker-ubuntu-ibm-cli:latest'}
+                docker { image 'derekteay/docker-ubuntu-ibm-cli' }
             }
             steps {
                 sh '''
