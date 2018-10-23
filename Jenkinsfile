@@ -49,8 +49,9 @@ pipeline {
                 #!/bin/bash
 
                 echo "$IBMCLOUD_API_KEY"
-                ibmcloud login
+                ibmcloud login -a https://api.ng.bluemix.net
                 ibmcloud cs clusters
+                
                 '''
             }
         }
