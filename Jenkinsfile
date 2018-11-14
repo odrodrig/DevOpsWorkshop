@@ -57,12 +57,23 @@
 //     }
 // }
 
-podTemplate(label: 'mypod',
-    volumes: [
-        hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
-        secretVolume(secretName: 'registry-account', mountPath: '/var/run/secrets/registry-account'),
-        configMapVolume(configMapName: 'registry-config', mountPath: '/var/run/configs/registry-config')
+// Pod Template
+def cloud = env.CLOUD ?: "kubernetes"
+def registryCredsID = env.REGISTRY_CREDENTIALS ?: "registry-credentials-id"
+def serviceAccount = env.SERVICE_ACCOUNT ?: "default"
+
+// Pod Environment Variables
+def namespace = env.NAMESPACE ?: "default"
+def registry = env.REGISTRY ?: "mycluster.icp:8500"
+
+podTemplate(label: 'mypod', cloud: cloud, serviceAccount: serviceAccount, namespace: namespace, envVars: [
+        envVar(key: 'NAMESPACE', value: namespace),
+        envVar(key: 'REGISTRY', value: registry)
     ],
+    volumes: [
+        hostPathVolume(hostPath: '/etc/docker/certs.d', mountPath: '/etc/docker/certs.d'),
+        hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')
+],
     containers: [
         containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl', ttyEnabled: true, command: 'cat'),
         containerTemplate(name: 'docker' , image: 'docker:17.06.1-ce', ttyEnabled: true, command: 'cat'),
@@ -90,7 +101,7 @@ podTemplate(label: 'mypod',
                 NAMESPACE=`cat /var/run/configs/registry-config/namespace`
                 REGISTRY=`cat /var/run/configs/registry-config/registry`
 
-                docker build -t \${REGISTRY}/\${NAMESPACE}/bluecompute-ce-web:${env.BUILD_NUMBER} .
+                docker build -t \${REGISTRY}/\${NAMESPACE}/${APP_NAME}:${env.BUILD_NUMBER} .
                 """
             }
             stage('Push Docker Image to Registry') {
@@ -105,7 +116,7 @@ podTemplate(label: 'mypod',
                 docker login -u=\${DOCKER_USER} -p=\${DOCKER_PASSWORD} \${REGISTRY}
                 set -x
 
-                docker push \${REGISTRY}/\${NAMESPACE}/bluecompute-ce-web:${env.BUILD_NUMBER}
+                docker push \${REGISTRY}/\${NAMESPACE}/${APP_NAME}:${env.BUILD_NUMBER}
                 """
             }
         }
@@ -116,7 +127,7 @@ podTemplate(label: 'mypod',
                 set +e
                 NAMESPACE=`cat /var/run/configs/registry-config/namespace`
                 REGISTRY=`cat /var/run/configs/registry-config/registry`
-                DEPLOYMENT=`kubectl --namespace=\${NAMESPACE} get deployments -l app=bluecompute,micro=web-bff -o name`
+                DEPLOYMENT=`kubectl --namespace=\${NAMESPACE} get deployments -l app=${APP_NAME} -o name`
 
                 kubectl --namespace=\${NAMESPACE} get \${DEPLOYMENT}
 
@@ -127,10 +138,11 @@ podTemplate(label: 'mypod',
                 fi
 
                 # Update Deployment
-                kubectl --namespace=\${NAMESPACE} set image \${DEPLOYMENT} web=\${REGISTRY}/\${NAMESPACE}/bluecompute-ce-web:${env.BUILD_NUMBER}
+                kubectl --namespace=\${NAMESPACE} set image \${DEPLOYMENT} web=\${REGISTRY}/\${NAMESPACE}/${APP_NAME}:${env.BUILD_NUMBER}
                 kubectl --namespace=\${NAMESPACE} rollout status \${DEPLOYMENT}
                 """
             }
         }
+        //container for FVT
     }
 }
