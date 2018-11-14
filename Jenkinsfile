@@ -98,48 +98,35 @@ podTemplate(label: 'mypod', cloud: cloud, serviceAccount: serviceAccount, namesp
             stage('Build Docker Image') {
                 sh """
                 #!/bin/bash
-                NAMESPACE=`cat /var/run/configs/registry-config/namespace`
-                REGISTRY=`cat /var/run/configs/registry-config/registry`
-
-                docker build -t \${REGISTRY}/\${NAMESPACE}/${APP_NAME}:${env.BUILD_NUMBER} .
+                docker build -t ${env.REGISTRY}/${env.NAMESPACE}/liberty-starter:${env.BUILD_NUMBER} .
                 """
             }
             stage('Push Docker Image to Registry') {
-                sh """
-                #!/bin/bash
-                NAMESPACE=`cat /var/run/configs/registry-config/namespace`
-                REGISTRY=`cat /var/run/configs/registry-config/registry`
-
-                set +x
-                DOCKER_USER=`cat /var/run/secrets/registry-account/username`
-                DOCKER_PASSWORD=`cat /var/run/secrets/registry-account/password`
-                docker login -u=\${DOCKER_USER} -p=\${DOCKER_PASSWORD} \${REGISTRY}
-                set -x
-
-                docker push \${REGISTRY}/\${NAMESPACE}/${APP_NAME}:${env.BUILD_NUMBER}
-                """
+                withCredentials([usernamePassword(credentialsId: registryCredsID,
+                                               usernameVariable: 'USERNAME',
+                                               passwordVariable: 'PASSWORD')]) {
+                    sh """
+                    #!/bin/bash
+                    docker login -u ${USERNAME} -p ${PASSWORD} ${env.REGISTRY}
+                    docker push ${env.REGISTRY}/${env.NAMESPACE}/${APP_NAME}:${env.BUILD_NUMBER}
+                    """
+                }
             }
         }
         container('kubectl') {
             stage('Deploy new Docker Image') {
                 sh """
                 #!/bin/bash
-                set +e
-                NAMESPACE=`cat /var/run/configs/registry-config/namespace`
-                REGISTRY=`cat /var/run/configs/registry-config/registry`
-                DEPLOYMENT=`kubectl --namespace=\${NAMESPACE} get deployments -l app=${APP_NAME} -o name`
-
-                kubectl --namespace=\${NAMESPACE} get \${DEPLOYMENT}
-
+                DEPLOYMENT=`kubectl --namespace=${env.NAMESPACE} get deployments -l app=liberty-starter,component=web-app,release=${env.RELEASE_NAME} -o name`
+                kubectl --namespace=${env.NAMESPACE} get \${DEPLOYMENT}
                 if [ \${?} -ne "0" ]; then
                     # No deployment to update
                     echo 'No deployment to update'
                     exit 1
                 fi
-
                 # Update Deployment
-                kubectl --namespace=\${NAMESPACE} set image \${DEPLOYMENT} web=\${REGISTRY}/\${NAMESPACE}/${APP_NAME}:${env.BUILD_NUMBER}
-                kubectl --namespace=\${NAMESPACE} rollout status \${DEPLOYMENT}
+                kubectl --namespace=${env.NAMESPACE} set image \${DEPLOYMENT} ${RELEASE_NAME}-web=${env.REGISTRY}/${env.NAMESPACE}/liberty-starter:${env.BUILD_NUMBER}
+                kubectl --namespace=${env.NAMESPACE} rollout status \${DEPLOYMENT}
                 """
             }
         }
