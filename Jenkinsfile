@@ -98,6 +98,8 @@ podTemplate(label: 'mypod', cloud: cloud, serviceAccount: serviceAccount, namesp
             stage('Build Docker Image') {
                 sh """
                 #!/bin/bash
+                ls
+                cd nodeApp
                 docker build -t ${env.REGISTRY}/${env.NAMESPACE}/liberty-starter:${env.BUILD_NUMBER} .
                 """
             }
