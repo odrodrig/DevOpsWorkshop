@@ -73,18 +73,20 @@ podTemplate(label: 'mypod', cloud: cloud, serviceAccount: serviceAccount, namesp
             stage('Deploy new Docker Image') {
                 sh """
                 #!/bin/bash
+                DEPLOYMENT=`kubectl --namespace=${env.NAMESPACE} get deployments -l app=${env.APP_NAME} -o name`
+                kubectl --namespace=${env.NAMESPACE} get \${DEPLOYMENT}
 
-                echo ${env.BRANCH_NAME}
+                echo \${env.BRANCH_NAME}
 
                 if [ ${env.BRANCH_NAME} == 'test' ]; then
                     DEPLOYMENT=`kubectl --namespace=${env.NAMESPACE} get deployments -l app="${env.APP_NAME}-test" -o name`
                     echo 'In test branch. Deploying to test env'
-                    kubectl --namespace=${env.NAMESPACE} set image \${DEPLOYMENT} ${env.APP_NAME}=${env.REGISTRY}/${env.NAMESPACE}/${env.IMAGE_NAME}:${env.BUILD_NUMBER}
+                    kubectl --namespace=${env.NAMESPACE} set image \${DEPLOYMENT} ${DEPLOYMENT}=${env.REGISTRY}/${env.NAMESPACE}/${env.IMAGE_NAME}:${env.BUILD_NUMBER}
 
                 elif [ ${env.BRANCH_NAME} == 'master' ]; then
                     DEPLOYMENT=`kubectl --namespace=${env.NAMESPACE} get deployments -l app=${env.APP_NAME} -o name`
                     echo 'In master branch. Deploying to prod env'
-                    kubectl --namespace=${env.NAMESPACE} set image \${DEPLOYMENT} ${env.APP_NAME}=${env.REGISTRY}/${env.NAMESPACE}/${env.IMAGE_NAME}:${env.BUILD_NUMBER}
+                    kubectl --namespace=${env.NAMESPACE} set image \${DEPLOYMENT} ${DEPLOYMENT}=${env.REGISTRY}/${env.NAMESPACE}/${env.IMAGE_NAME}:${env.BUILD_NUMBER}
                 fi
 
                 if [ \${?} -ne "0" ]; then
