@@ -100,7 +100,7 @@ podTemplate(label: 'mypod', cloud: cloud, serviceAccount: serviceAccount, namesp
                 #!/bin/bash
                 ls
                 cd nodeApp
-                docker build -t ${env.REGISTRY}/${env.NAMESPACE}/${APP_NAME}:${env.BUILD_NUMBER} .
+                docker build -t ${env.REGISTRY}/${env.NAMESPACE}/${IMAGE_NAME}:${env.BUILD_NUMBER} .
                 """
             }
             stage('Push Docker Image to Registry') {
@@ -110,7 +110,7 @@ podTemplate(label: 'mypod', cloud: cloud, serviceAccount: serviceAccount, namesp
                     sh """
                     #!/bin/bash
                     docker login -u ${USERNAME} -p ${PASSWORD} ${env.REGISTRY}
-                    docker push ${env.REGISTRY}/${env.NAMESPACE}/${APP_NAME}:${env.BUILD_NUMBER}
+                    docker push ${env.REGISTRY}/${env.NAMESPACE}/${env.IMAGE_NAME}:${env.BUILD_NUMBER}
                     """
                 }
             }
@@ -119,7 +119,7 @@ podTemplate(label: 'mypod', cloud: cloud, serviceAccount: serviceAccount, namesp
             stage('Deploy new Docker Image') {
                 sh """
                 #!/bin/bash
-                DEPLOYMENT=`kubectl --namespace=${env.NAMESPACE} get deployments -l app=${APP_NAME},component=web-app -o name`
+                DEPLOYMENT=`kubectl --namespace=${env.NAMESPACE} get deployments -l app=${env.APP_NAME} -o name`
                 kubectl --namespace=${env.NAMESPACE} get \${DEPLOYMENT}
                 if [ \${?} -ne "0" ]; then
                     # No deployment to update
@@ -127,7 +127,7 @@ podTemplate(label: 'mypod', cloud: cloud, serviceAccount: serviceAccount, namesp
                     exit 1
                 fi
                 # Update Deployment
-                kubectl --namespace=${env.NAMESPACE} set image \${DEPLOYMENT} ${RELEASE_NAME}-web=${env.REGISTRY}/${env.NAMESPACE}/${APP_NAME}:${env.BUILD_NUMBER}
+                kubectl --namespace=${env.NAMESPACE} set image \${DEPLOYMENT} ${env.APP_NAME}=${env.REGISTRY}/${env.NAMESPACE}/${env.IMAGE_NAME}:${env.BUILD_NUMBER}
                 kubectl --namespace=${env.NAMESPACE} rollout status \${DEPLOYMENT}
                 """
             }
