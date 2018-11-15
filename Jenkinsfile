@@ -132,6 +132,6 @@ podTemplate(label: 'mypod', cloud: cloud, serviceAccount: serviceAccount, namesp
                 """
             }
         }
-        //container for FVT
+        //container for FVT testing
     }
 }
