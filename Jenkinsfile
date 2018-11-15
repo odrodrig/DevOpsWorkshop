@@ -8,54 +8,6 @@
 //    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
-// def registryCredsID = env.REGISTRY_CREDENTIALS ?: "registry_credentials"
-// pipeline {
-//     agent any
-//     stages {
-//         stage ('test') {
-//             agent {
-//                 docker { image 'node:8' }
-//             }
-//             steps {
-//                 sh '''
-//                 #!/bin/bash
-//                 cd nodeApp
-//                 npm install
-//                 npm test
-//                 '''
-//             }
-//         }
-//         stage ('Push') {
-//             steps {
-//                 withCredentials([usernamePassword(credentialsId: registryCredsID,
-//                                                 usernameVariable: 'USERNAME',
-//                                                 passwordVariable: 'PASSWORD')]) {
-//                                                     sh '''
-//                                                     #!/bin/bash
-//                                                     cd nodeApp
-//                                                     docker login -u "$USERNAME" -p "$PASSWORD"
-//                                                     docker build -t "$USERNAME/$APP_NAME:$BUILD_NUMBER" .
-//                                                     docker push "$USERNAME/$APP_NAME:$BUILD_NUMBER"
-//                                                     '''
-//                                                }
-//             }
-//         }
-//         stage ('deploy') {
-//             agent {
-//                 docker { image 'ibmcom/ibm-cloud-developer-tools-amd64' }
-//             }
-//             steps {
-//                 sh '''
-//                 #!/bin/bash
-//                 echo "$IBMCLOUD_API_KEY"
-//                 ibmcloud login -a https://api.ng.bluemix.net
-//                 ibmcloud cs clusters
-                
-//                 '''
-//             }
-//         }
-//     }
-// }
 
 // Pod Template
 def cloud = env.CLOUD ?: "kubernetes"
