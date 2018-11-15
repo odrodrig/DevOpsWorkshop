@@ -10,8 +10,6 @@
 //    limitations under the License.
 
 
-
-
 // Pod Template
 def cloud = env.CLOUD ?: "kubernetes"
 def registryCredsID = env.REGISTRY_CREDENTIALS ?: "registry-credentials-id"
