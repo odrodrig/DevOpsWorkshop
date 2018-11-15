@@ -81,11 +81,11 @@ podTemplate(label: 'mypod', cloud: cloud, serviceAccount: serviceAccount, namesp
                     echo 'In test branch. Deploying to test env'
                     kubectl --namespace=${env.NAMESPACE} set image \${DEPLOYMENT} ${env.APP_NAME}=${env.REGISTRY}/${env.NAMESPACE}/${env.IMAGE_NAME}:${env.BUILD_NUMBER}
 
-                if [ ${env.BRANCH_NAME} == 'master' ]; then
+                elif [ ${env.BRANCH_NAME} == 'master' ]; then
                     DEPLOYMENT=`kubectl --namespace=${env.NAMESPACE} get deployments -l app=${env.APP_NAME} -o name`
                     echo 'In master branch. Deploying to prod env'
                     kubectl --namespace=${env.NAMESPACE} set image \${DEPLOYMENT} ${env.APP_NAME}=${env.REGISTRY}/${env.NAMESPACE}/${env.IMAGE_NAME}:${env.BUILD_NUMBER}
-
+                fi
 
                 if [ \${?} -ne "0" ]; then
                     # No deployment to update
