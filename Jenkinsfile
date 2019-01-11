@@ -8,85 +8,55 @@
 //    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
-
-
-
-// Pod Template
-def cloud = env.CLOUD ?: "kubernetes"
-def registryCredsID = env.REGISTRY_CREDENTIALS ?: "registry-credentials-id"
-def serviceAccount = env.SERVICE_ACCOUNT ?: "default"
-
-// Pod Environment Variables
-def namespace = env.NAMESPACE ?: "default"
-def registry = env.REGISTRY ?: "mycluster.icp:8500"
-
-podTemplate(label: 'mypod', cloud: cloud, serviceAccount: serviceAccount, namespace: namespace, envVars: [
-        envVar(key: 'NAMESPACE', value: namespace),
-        envVar(key: 'REGISTRY', value: registry)
-    ],
-    volumes: [
-        hostPathVolume(hostPath: '/etc/docker/certs.d', mountPath: '/etc/docker/certs.d'),
-        hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')
-],
-    containers: [
-        containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl', ttyEnabled: true, command: 'cat'),
-        containerTemplate(name: 'docker' , image: 'docker:17.06.1-ce', ttyEnabled: true, command: 'cat'),
-        containerTemplate(name: 'node'   , image: 'node:8', ttyEnabled: true, comand: 'cat')
-  ]) {
-
-    node('mypod') {
-        checkout scm
-        container('node') {
-            stage('test') {
-                sh """
+def registryCredsID = env.REGISTRY_CREDENTIALS ?: "registry_credentials"
+pipeline {
+    agent any
+    stages {
+        stage ('test') {
+            agent {
+                docker { image 'node:8' }
+            }
+            steps {
+                sh '''
                 #!/bin/bash
                 cd nodeApp
-                echo "Installing dependencies"
                 npm install
-                echo "Starting inting and unit testing"
                 npm test
-                """
+                '''
             }
         }
-        container('docker') {
-            stage('Build Docker Image') {
-                sh """
-                #!/bin/bash
-                ls
-                cd nodeApp
-                docker build -t ${env.REGISTRY}/${env.NAMESPACE}/${IMAGE_NAME}:${env.BUILD_NUMBER} .
-                """
-            }
-            stage('Push Docker Image to Registry') {
+        stage ('Push') {
+            steps {
                 withCredentials([usernamePassword(credentialsId: registryCredsID,
-                                               usernameVariable: 'USERNAME',
-                                               passwordVariable: 'PASSWORD')]) {
-                    sh """
-                    #!/bin/bash
-                    docker login -u ${USERNAME} -p ${PASSWORD} ${env.REGISTRY}
-                    docker push ${env.REGISTRY}/${env.NAMESPACE}/${env.IMAGE_NAME}:${env.BUILD_NUMBER}
-                    """
-                }
+                                                usernameVariable: 'USERNAME',
+                                                passwordVariable: 'PASSWORD')]) {
+                                                    sh '''
+                                                    #!/bin/bash
+                                                    cd nodeApp
+                                                    docker login -u "$USERNAME" -p "$PASSWORD"
+                                                    docker build -t "$USERNAME/$APP_NAME:$BUILD_NUMBER" .
+                                                    docker push "$USERNAME/$APP_NAME:$BUILD_NUMBER"
+                                                    '''
+                                               }
             }
         }
-        container('kubectl') {
-            stage('Deploy new Docker Image') {
-                sh """
+        stage ('deploy') {
+            agent any
+            steps {
+                sh '''
                 #!/bin/bash
-                DEPLOYMENT=`kubectl --namespace=${env.NAMESPACE} get deployments -l app=${env.APP_NAME} -o name`
-                kubectl --namespace=${env.NAMESPACE} get \${DEPLOYMENT}
-
-                if [ \${?} -ne "0" ]; then
-                    # No deployment to update
-                    echo 'No deployment to update'
-                    exit 1
+                if docker ps | grep "$APP_NAME"; then
+                    echo 'App exists and is running, removing old container'
+                    docker kill $APP_NAME
+                    docker rm "$APP_NAME"
                 fi
-
-
-                # Update Deployment
-                kubectl --namespace=${env.NAMESPACE} set image \${DEPLOYMENT} ${env.APP_NAME}=${env.REGISTRY}/${env.NAMESPACE}/${env.IMAGE_NAME}:${env.BUILD_NUMBER}
-                kubectl --namespace=${env.NAMESPACE} rollout status \${DEPLOYMENT}
-                """
+                if docker ps -a | grep "$APP_NAME"; then
+                   echo 'App exists, removing old container'
+                   docker rm "$APP_NAME"
+                fi
+                docker run -d -p 8080:8080 --name "$APP_NAME" "$DOCKER_HUB_ACCOUNT/$APP_NAME:$BUILD_NUMBER"
+                docker ps
+                '''
             }
         }
     }
