@@ -1,16 +1,22 @@
 # DevOpsWorkshop
-A DevOps workshop showing the basics of Jenkins and CI/CD pipelines. 
+A DevOps workshop showing the basics of Jenkins and CI/CD pipelines.
 
-In this workshop we will be creating a CI/CD pipeline using Jenkins in a Docker container running on Play With Docker. This pipeline will first use Node Package Manager to build a node application and then run the Jslint tool to check for javascript syntax errors. In the next stage a Docker image containing the node application will be built and pushed to a public docker registry on Docker Hub. Lastly, a container with the node application will be deployed to Play With Docker using the latest image from Docker Hub that was pushed in the previous step.
+In this workshop we will be creating a CI/CD pipeline using Jenkins in the IBM Kubernetes Service. This pipeline will first use Node Package Manager to build a node application and then run the Jslint tool to check for javascript syntax errors. In the next stage a Docker image containing the node application will be built and pushed to a public docker registry on Docker Hub. Lastly, a container with the node application will be deployed to kubernetes using the latest image from Docker Hub that was pushed in the previous step.
 
 ## Prerequisites
 
 Before we get started there are a few prerequisites that are required for this workshop to go smoothly.
 
-- Ensure that you are able to access Play With Docker
 - Have an account on Docker Hub
+- Have an account on IBM Cloud
 - A github account
 - Git cli
+- ibmcloud cli
+- kubectl cli
+
+## Steps
+
+### Clone
 
 1. Fork this repo
     1. In this repo, click on **fork** button at the top right of the page. This will create your own copy of the repo that you can modify.
@@ -40,55 +46,14 @@ Before we get started there are a few prerequisites that are required for this w
 
      For now, let's put this aside and move on to creating our CI/CD pipeline.
 
-3. For this workshop, we will be using Play with Docker for our Docker environment. Play with Docker allows you to well... play with Docker in a browser without having to download any additional software. If you haven't already, visit [Docker Hub](https://hub.docker.com/) and create an account.
-    1. Go to https://labs.play-with-docker.com/
-
-    ![Play with Docker](./images/pwd.png)
-
-    2. Sign in with your Docker Hub account. After signing in, you will be taken to the docker environment. These sessions only last for four hours at a time and then are deleted. Fortunately, this lab won't take that long.
-
-4. Now we can create a Jenkins container to host our CI/CD pipeline.
-    1. Click on the **Add new instance** link to create a new instance of the sandbox environment which is a container configured with Docker.
-
-    ![New Instance](./images/newInstance.png)
-
-    ![Sandbox](./images/sandbox.png)
-
-    2. Next, paste the following command in the newly created container:
-
+3. For this workshop, we will be using the IBM Kubernetes Service. If you haven't already, visit [Docker Hub](https://hub.docker.com), and [IBM Cloud](https://cloud.ibm.com) to create accounts.
+    1. Run [createCluster.sh](./scripts/createCluster.sh):
     ```bash
-    docker run -d \
-        -p 8079:8080 \
-        -p 50000:50000 \
-        -v /var/run/docker.sock:/var/run/docker.sock \
-        -v jenkins_home:/var/jenkins_home \
-        --name jenkins \
-        odrodrig/jenkins-docker:latest
+    $ ./scripts/createCluster.sh
     ```
 
-   This command creates a Jenkins container that is configured to run Docker. Let's break down the command piece by piece:
-
-   - **docker run -d** - This is the command used to create new containers. **-d** means that the app runs in detached mode which lets the container run in the background and returns control of the terminal rather than tailing output of the new container. 
-
-   - **-p 8079:8080** - This flag binds a local port to a port in the container. In this case, we are binding the container's port 8080 to the local port, 8079. Same thing with the next line except we are binding port 50000 to port 50000.
-
-   - **-v /var/run/docker.sock:/var/run/docker.sock** - This flag creates a volume inside the new container and copies the docker.sock file from the local file system to the new container's file system. This docker.sock file will allow us to deploy Docker containers within Play with Docker from the Jenkins container. 
-
-   - **--name jenkins** - This just sets the container's name to **jenkins** which allows us to reference the container by name if needed.
-
-   - **odrodrig/jenkins-docker:latest** - This is the image that we will be using to create the new container. 
-
-   When the image is done building you should see the following output:
-
-   ![jenkinsContainer](./images/jenkinsContainer.png)
-
-   You can verify that the container is deployed by running the following command:
-
-   ```bash
-   docker ps
-   ```
-   
-   ![Docker ps](./images/dockerPs.png)
+4. Now we can create a Jenkins service to host our CI/CD pipeline.
+    * Coming soon.
 
 5. Now that Jenkins is running, we need to do some initial configuration.
     1. First, we need to grab the initial admin password. This is output in the logs during the container creation. To access the logs for the container, run the following command:
@@ -103,17 +68,15 @@ Before we get started there are a few prerequisites that are required for this w
 
     2. Copy the password from the log output.
 
-    3. Then, near the top of the page you should see two ovals with port numbers in them. These are the port numbers that we are exposing in our Jenkins container. We will be able to access the Jenkins instance by going to port **8079**. Click on the oval for port **8079**.
-
-    ![Ports](./images/ports.png)
+    3. Steps for accessing Jenkins are coming soon...
 
     4. You should now be at the **Getting Started** page for your Jenkins instance. Paste the password you copied earlier into the field labeled **Administrator password**.
 
     5. Next, click on the button to install suggested plugins. This will give us what we need for our basic pipeline. The installation will take a minute or two so now is a good time for a break.
 
-    ![Install plugins](./images/installPlugins.png) 
+    ![Install plugins](./images/installPlugins.png)
 
-    6. After the installation of plugins, you will have the opportunity to create a new admin user. This is optional for this workshop but ideally in a production Jenkins environment, you would create new Admin identities instead of using the initial admin credentials. 
+    6. After the installation of plugins, you will have the opportunity to create a new admin user. This is optional for this workshop but ideally in a production Jenkins environment, you would create new Admin identities instead of using the initial admin credentials.
 
         - Optional: To create a new admin user enter a username, password, full name, and email
 
@@ -125,7 +88,7 @@ Before we get started there are a few prerequisites that are required for this w
 
 6. Now we are ready to start using Jenkins and build our pipeline
     1. Click on the **Start Using Jenkins** button
-    2. Click on either the **create new jobs** hypertext in the center of the page or click on the **New Item** button on the left vertical navigation bar. 
+    2. Click on either the **create new jobs** hypertext in the center of the page or click on the **New Item** button on the left vertical navigation bar.
 
     ![Create New Job](./images/newJob.png) ![New Item](./images/newItem.png)
 
@@ -152,7 +115,7 @@ Before we get started there are a few prerequisites that are required for this w
     ![Parameterized](./images/parameterized.png)
 
     5. In the dropdown that appears, select **String parameter**. Some new text fields should pop up. Enter the following in the corresponding fields:
-    
+
         - For **Name** enter **APP_NAME**
         - For **Default Value** enter whatever you would like to name your app. In this example, I named the app **node-app**
 
@@ -161,10 +124,10 @@ Before we get started there are a few prerequisites that are required for this w
     6. There are two more paramters we need.
         1. Click on the **Add parameter** dropdown and select **String Parameter**
             1. For **Name**, enter **DOCKER_HUB_ACCOUNT**
-            2. For **Default Value**, enter your Docker Hub username. 
+            2. For **Default Value**, enter your Docker Hub username.
         2. Click on the **Add parameter** dropdown and select **String Parameter**
             1. For **Name**, enter **REGISTRY_CREDENTIALS**
-            2. For **Default Value**, enter **registry_credentials** 
+            2. For **Default Value**, enter **registry_credentials**
         3. Click **Save** at the bottom of the page
 
 7. Remember earlier how I mentioned that we would store our Docker credentails in Jenkins which would allow us to reference them with the credential ID "registry_credentials"? Now is when we can save those credentials. If this doesn't make sense, it will in the following steps.
@@ -179,7 +142,7 @@ Before we get started there are a few prerequisites that are required for this w
 
     ![Global](./images/global.png)
 
-    5. Click on the **Add Credentials** button on the left nav bar 
+    5. Click on the **Add Credentials** button on the left nav bar
     6. For the new credentials, leave **Kind** and **Scope** with the default values and enter the following information in their corresponding fields:
 
         - **Username** - Enter your Docker Hub username
@@ -203,7 +166,7 @@ Before we get started there are a few prerequisites that are required for this w
 
     ![Build with params](./images/buildWithParams.png)
 
-    3. On the next page, you should see the parameters that we defined in the pipeline configuration earlier. The default values should be good since we set them earlier, but if you need a refresher on what each variable is, check out the pipeline configuration steps we went through previously. 
+    3. On the next page, you should see the parameters that we defined in the pipeline configuration earlier. The default values should be good since we set them earlier, but if you need a refresher on what each variable is, check out the pipeline configuration steps we went through previously.
 
     4. Click **Build**
 
@@ -213,31 +176,17 @@ Before we get started there are a few prerequisites that are required for this w
 
     ![buildStatus](./images/buildStatus.png)
 
-    6. You can follow along with the output as each stage is being built. If you'd like to see the code that is being run, checkout the [Jenkinsfile](Jenkinsfile) in this repo. When you see **Finished: SUCCESS**, that means that the docker image was built, pushed to Docker Hub, and deployed to Play With Docker.
+    6. You can follow along with the output as each stage is being built. If you'd like to see the code that is being run, checkout the [Jenkinsfile](Jenkinsfile) in this repo. When you see **Finished: SUCCESS**, that means that the docker image was built, pushed to Docker Hub, and deployed to kubernetes.
 
     ![Success](./images/success.png)
 
-9. Now that the pipeline is finished running and the app deployed, let's verify that the node app container is running on Play With Docker.
-    1. Go back to your Play With Docker browser tab
-    2. Run the following command:
-
-    ```bash
-    docker ps
-    ```
-
-   You should now see two containers running in your Play With Docker environment: Jenkins and your new node app container.
-
-   ![docker ps](./images/dockerPsNew.png)
-
-   3. You will also notice that a new port is available at the top of the page. The port, **8080**, is exposed by the node app container and will allow us to visit the app. Click on the port **8080**.
-
-   ![port 8080](./images/port8080.png)
-
-   This is a very simple app that just asks for your name and echos a simple hello message back to you. It doesn't store any data and is the simplest example app I could find. 
+9. Now that the pipeline is finished running and the app deployed, let's verify that the node app container is running on kuberetes.
+    * Steps coming soon
+   This is a very simple app that just asks for your name and echos a simple hello message back to you. It doesn't store any data and is the simplest example app I could find.
 
    ![welcome](./images/welcome.png)
 
-   We have successfully deployed a Node.js app and verified that it is running, but we are not done yet. If you noticed, we had to manually start the build process from Jenkins. In the next section we will focus on automating the build pipeline to begin when code is commited to GitHub. 
+   We have successfully deployed a Node.js app and verified that it is running, but we are not done yet. If you noticed, we had to manually start the build process from Jenkins. In the next section we will focus on automating the build pipeline to begin when code is commited to GitHub.
 
 10. Let's setup our GitHub Webhooks for automated deployments
     1. Click on **Jenkins** in the top left of the page to go back to the home page.
@@ -247,12 +196,12 @@ Before we get started there are a few prerequisites that are required for this w
 
     ![Configure Github plugin](./images/configureGithubPlugin.png)
 
-    5. Then click on the question mark icon to the right of **Override Hook URL**. 
+    5. Then click on the question mark icon to the right of **Override Hook URL**.
     6. Copy the webhook URL that appears in the text box
 
     ![webhook URL](./images/webhookURL.png)
 
-    7. After that, go to the Github repo that you forked earlier. It should be the copy in your github account. 
+    7. After that, go to the Github repo that you forked earlier. It should be the copy in your github account.
     8. Click on the **Settings** tab in the repo
 
     ![settings](./images/settings.png)
@@ -261,9 +210,9 @@ Before we get started there are a few prerequisites that are required for this w
 
     ![add Webhook](./images/addWebhook.png)
 
-    10. Under **Payload URL**, paste the webhook URL we copied from Jenkins. 
+    10. Under **Payload URL**, paste the webhook URL we copied from Jenkins.
     11. Leave the rest of the fields with the default values and click on the **add webhook** button at the bottom
-    
+
         And now your pipeline is ready to build on commits.
 
 11. Now let's make a change to the app and push the change
@@ -275,7 +224,7 @@ Before we get started there are a few prerequisites that are required for this w
 
     3. Now we need to push the latest changes to our repo
 
-        - If editing locally: 
+        - If editing locally:
             1. Open your terminal and change directory in the project directory
             2. Run the following commands:
 
@@ -302,7 +251,7 @@ Before we get started there are a few prerequisites that are required for this w
 
     4. After pushing changes, go back into your pipeline in Jenkins and you should see the pipeline running automatically
 
-12. Go back to your browser tab that has your Play with Docker environment and click on the port number **8080**.
+12. Reload the browser page with our app
 
     You should now see your app running but this time, your custom welcome message will be displayed.
 
@@ -311,4 +260,4 @@ Before we get started there are a few prerequisites that are required for this w
 
 ## Review
 
-In this workshop we deployed an instance of Jenkins on Docker using the Play with Docker environment. Then, we configured a pipeline for deploying a simple node.js application to the same Play with Docker environment. After configuring the pipeline, we then integrated with GitHub to allow for automatic builds on commits to the repo.
+In this workshop we deployed an instance of Jenkins in kubernetes. Then, we configured a pipeline for deploying a simple node.js application to the same kubernetes cluster. After configuring the pipeline, we then integrated with GitHub to allow for automatic builds on commits to the repo.
