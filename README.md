@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/odrodrig/DevOpsWorkshop.svg?branch=master)](https://travis-ci.org/odrodrig/DevOpsWorkshop)
+
 # DevOpsWorkshop
 A DevOps workshop showing the basics of Jenkins and CI/CD pipelines. 
 
