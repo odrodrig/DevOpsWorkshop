@@ -1,0 +1,29 @@
+---
+language: node_js
+node_js:
+  - "node"
+  - "lts/*"
+sudo: required
+
+services:
+  - docker
+
+matrix:
+  fast_finish: true
+
+env:
+  - TEST_RUN="pushd nodeApp && npm test && popd"
+  - TEST_RUN="./tests/test-docker.sh"
+
+before_install:
+  - "npm -g install jslint"
+  - "sudo apt-get install shellcheck"
+  - "sudo pip --disable-pip-version-check install yamllint"
+  - "./tests/test-jslint.sh"
+  - "./tests/test-shellcheck.sh"
+  - "./tests/test-yamllint.sh"
+
+install:
+  - "pushd nodeApp && npm install && popd"
+
+script: "$TEST_RUN"
