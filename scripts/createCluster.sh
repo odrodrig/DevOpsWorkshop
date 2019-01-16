@@ -9,7 +9,7 @@ iks_create(){
         echo "Cluster does not exist, creating new cluster"
         ibmcloud cs cluster-create --name mycluster
     fi
-    while [[ "$(ibmcloud ks clusters | grep mycluster | awk '{ print $3 }')" != "normal" ]]; do
+    while [[ "$(ibmcloud ks clusters | awk '/mycluster/ { print $3 }')" != "normal" ]]; do
         echo "Cluster is not ready yet."
         sleep 60
     done
@@ -37,9 +37,11 @@ deploy_jenkins(){
 }
 
 get_login(){
+    echo ""
      echo "Jenkins URL: http://$(ibmcloud ks workers --cluster mycluster | awk '{ print $2 }' | grep '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}'):31234"
      #shellcheck disable=SC2046
      echo "Initial Jenkins admin password: $(kubectl logs $(kubectl get pods |  awk ' /jenkins/ { print $1 }') | grep -B 2 'initialAdminPassword' | head -1)"
+     echo "Kubernetes URL: $(kubectl cluster-info | awk '/master/ { print $6 }')"
 }
 
 main(){
