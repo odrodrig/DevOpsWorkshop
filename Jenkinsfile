@@ -20,7 +20,7 @@ def serviceAccount = env.SERVICE_ACCOUNT ?: "default"
 def namespace = env.NAMESPACE ?: "default"
 def registry = env.REGISTRY ?: "hub.docker.com"
 
-podTemplate(label: 'mypod', cloud: cloud, serviceAccount: serviceAccount, namespace: namespace, envVars: [
+podTemplate(label: jenkins-slave, cloud: cloud, serviceAccount: serviceAccount, namespace: namespace, envVars: [
         envVar(key: 'NAMESPACE', value: namespace),
         envVar(key: 'REGISTRY', value: registry)
     ],
@@ -31,10 +31,10 @@ podTemplate(label: 'mypod', cloud: cloud, serviceAccount: serviceAccount, namesp
     containers: [
         containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl', ttyEnabled: true, command: 'cat'),
         containerTemplate(name: 'docker' , image: 'docker:17.06.1-ce', ttyEnabled: true, command: 'cat'),
-        containerTemplate(name: 'node'   , image: 'node:8', ttyEnabled: true, comand: 'cat')
+        containerTemplate(name: 'node'   , image: 'node:8', ttyEnabled: true, command: 'cat')
   ]) {
 
-    node('mypod') {
+    node('jenkins-slave') {
         checkout scm
         container('node') {
             stage('test') {
@@ -81,9 +81,9 @@ podTemplate(label: 'mypod', cloud: cloud, serviceAccount: serviceAccount, namesp
                     echo 'In test branch. Deploying to test env'
                     kubectl --namespace=${env.NAMESPACE} set image \${DEPLOYMENT} ${env.APP_NAME}=${env.REGISTRY}/${env.NAMESPACE}/${env.IMAGE_NAME}:${env.BUILD_NUMBER}
 
-                elif [ ${env.BRANCH_NAME} == 'master' ]; then
+                elif [ ${env.BRANCH_NAME} == 'iks' ]; then
                     DEPLOYMENT=`kubectl --namespace=${env.NAMESPACE} get deployments -l app=${env.APP_NAME} -o name`
-                    echo 'In master branch. Deploying to prod env'
+                    echo 'In iks branch. Deploying to prod env'
                     kubectl --namespace=${env.NAMESPACE} set image \${DEPLOYMENT} ${env.APP_NAME}=${env.REGISTRY}/${env.NAMESPACE}/${env.IMAGE_NAME}:${env.BUILD_NUMBER}
                 else
                     echo "In unexpected branch $env.BRANCH_NAME. Exiting."
@@ -93,7 +93,7 @@ podTemplate(label: 'mypod', cloud: cloud, serviceAccount: serviceAccount, namesp
                 if [ \${?} -ne "0" ]; then
                     echo "No deployment to update"
                     echo "Creating deployment"
-                    kubectl apply kube/nodeApp.yaml
+                    kubectl apply -f kube/nodeApp.yaml
                 fi
 
 
