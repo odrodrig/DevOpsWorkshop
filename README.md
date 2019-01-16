@@ -1,6 +1,7 @@
 [![Build Status](https://travis-ci.org/odrodrig/DevOpsWorkshop.svg?branch=iks)](https://travis-ci.org/odrodrig/DevOpsWorkshop)
 
 # DevOpsWorkshop
+
 A DevOps workshop showing the basics of Jenkins and CI/CD pipelines.
 
 In this workshop we will be creating a CI/CD pipeline using Jenkins in the IBM Kubernetes Service. This pipeline will first use Node Package Manager to build a node application and then run the Jslint tool to check for javascript syntax errors. In the next stage a Docker image containing the node application will be built and pushed to a public docker registry on Docker Hub. Lastly, a container with the node application will be deployed to kubernetes using the latest image from Docker Hub that was pushed in the previous step.
@@ -30,10 +31,6 @@ Before we get started there are a few prerequisites that are required for this w
 
     ![Copy the repo URL](./images/clone.png)
 
-   In this lab there are two methods of editing the code: locally or on the browser.
-
-   **Option 1**: Locally
-
     2. On your local machine, open Terminal (Command Prompt for Windows users) and enter the following but replace **"{url from earlier}"** with your own repo url that was just copied:
 
     ```bash
@@ -42,35 +39,27 @@ Before we get started there are a few prerequisites that are required for this w
 
     This local repo is what we will be modifying and pushing later.
 
-    **Option 2**: Through the browser
-
-    2. For this method we will be editing the code directly in GitHub so cloning locally is not required.
-
-     For now, let's put this aside and move on to creating our CI/CD pipeline.
-
 3. For this workshop, we will be using the IBM Kubernetes Service. If you haven't already, visit [Docker Hub](https://hub.docker.com), and [IBM Cloud](https://cloud.ibm.com) to create accounts.
-    1. Run [createCluster.sh](./scripts/createCluster.sh):
+    1. Run [createCluster.sh](./scripts/createCluster.sh) to create a cluster in IBM Cloud, and deploy Jenkins into it:
     ```bash
     $ ./scripts/createCluster.sh
+    API endpoint: https://api.ng.bluemix.net
+    Logging in with API key from environment variable...
+    Authenticating...
+    OK
+    ...
+    Cluster is ready.
+    Jenkins is ready.
+    Jenkins URL: http://<JENKINS_IP>:31234
+    Initial Jenkins admin password: <JENKINS_INITIAL_ADMIN_PASSWORD>
     ```
-
-4. Now we can create a Jenkins service to host our CI/CD pipeline.
-    * Coming soon.
 
 5. Now that Jenkins is running, we need to do some initial configuration.
-    1. First, we need to grab the initial admin password. This is output in the logs during the container creation. To access the logs for the container, run the following command:
+    1. First, we need to grab the Jenkins URL and the  initial admin password. This is output at the end of the createCluster script (see example output above).
 
-    ```bash
-    docker logs jenkins
-    ```
+    2. Using your browser of choice, load the Jenkins URL.
 
-    This command outputs the most recent log output for the container. Look for the following section in the logs:
-
-    ![Docker logs](./images/dockerLogs.png)
-
-    2. Copy the password from the log output.
-
-    3. Steps for accessing Jenkins are coming soon...
+    3. Copy the initial admin password.
 
     4. You should now be at the **Getting Started** page for your Jenkins instance. Paste the password you copied earlier into the field labeled **Administrator password**.
 

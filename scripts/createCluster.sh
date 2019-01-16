@@ -33,7 +33,7 @@ deploy_jenkins(){
         echo "Jenkins is deploying."
         sleep 10
     done
-    echo "Jenkins is ready"
+    echo "Jenkins is ready."
 }
 
 get_login(){
