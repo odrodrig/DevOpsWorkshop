@@ -37,7 +37,7 @@ deploy_jenkins(){
 }
 
 get_login(){
-    echo ""
+    echo "Kubernetes URL: $(kubectl cluster-info | awk '/master/ { print $6 }')"
      echo "Jenkins URL: http://$(ibmcloud ks workers --cluster mycluster | awk '{ print $2 }' | grep '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}'):31234"
      #shellcheck disable=SC2046
      echo "Initial Jenkins admin password: $(kubectl logs $(kubectl get pods |  awk ' /jenkins/ { print $1 }') | grep -B 2 'initialAdminPassword' | head -1)"
